@@ -1,22 +1,31 @@
-dos2unix
-========
+txtidy
+======
 
-This is just a very, very simple helper that turns Windows into Unix newlines and
-trims trailing spaces in each line. With ab it of shell scripting, one could
-achieve similar results by doing
+This is just a very, very simple helper fixes a couple of inconsistencies in all
+text files within a given directory. It performs these changes:
 
-    find . -name '*.css' -exec dos2unix {} \;
+* dos2unix
+* Trailing spaces at the end of lines are removed
+* All files are made to end with exactly one newline character
+* UTF8-BOM is removed.
 
-But this program is easier to use and works well on Windows.
+I'm using this whenever I get a bunch of HTML/CSS/JS files and want to commit
+them to a repository. Having clean files prevent ugly diffs later on.
+
+Installation
+------------
+
+    go get https://github.com/xrstf/txtidy
 
 Usage
 -----
 
-First, ``go get https://github.com/xrstf/dos2unix-go``. Then you run it via
+Just run the ``txtidy`` binary and give the filename patterns to match against
+all files from the starting directory resursively.
 
-    dos2unix [-a] [-v] [-dir=<dir>] <pattern> <pattern> <pattern>
+    txtidy [-a] [-v] [-dir=<dir>] <pattern> <pattern> <pattern>
 
-For example
+For example:
 
-    $ dos2unix *.php
-    $ dos2unix -v *.css *.less
+    $ txtidy *.php
+    $ txtidy -v *.css *.less

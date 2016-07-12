@@ -18,6 +18,8 @@ var (
 	excludedDirs = []string{".git", ".hg", ".svn", "node_modules", "bower_components"}
 )
 
+var trailingWhitespace = regexp.MustCompile(`(?m:[\t ]+$)`)
+
 func main() {
 	flag.Parse()
 
@@ -71,8 +73,6 @@ func main() {
 
 	// let's walk the file tree
 
-	trailingWhitespace := regexp.MustCompile(`(?m:[\t ]+$)`)
-
 	filepath.Walk(rootDir, func(path string, info os.FileInfo, err error) error {
 		filename := filepath.Base(path)
 
@@ -115,20 +115,9 @@ func main() {
 			return nil
 		}
 
-		original := content
-
 		// do magic
-		// turn Windows newlines into Unix newlines
-		content = bytes.Replace(content, []byte{'\r'}, []byte{}, -1)
-
-		// trim trailing whitespace in each line
-		content = trailingWhitespace.ReplaceAllLiteral(content, []byte{})
-
-		// trim leading and trailing file space
-		content = bytes.TrimSpace(content)
-
-		// and make sure the file ends with a newline character
-		content = append(content, '\n')
+		original := content
+		content = tidy(content)
 
 		if bytes.Compare(content, original) != 0 {
 			if !verbose {
@@ -149,4 +138,25 @@ func main() {
 
 		return nil
 	})
+}
+
+func tidy(content []byte) []byte {
+	// turn Windows newlines into Unix newlines
+	content = bytes.Replace(content, []byte{'\r'}, []byte{}, -1)
+
+	// remove UTF BOMs
+	if bytes.Equal(content[0:3], []byte("\xEF\xBB\xBF")) {
+		content = content[3:]
+	}
+
+	// trim trailing whitespace in each line
+	content = trailingWhitespace.ReplaceAllLiteral(content, []byte{})
+
+	// trim leading and trailing file space
+	content = bytes.TrimSpace(content)
+
+	// and make sure the file ends with a newline character
+	content = append(content, '\n')
+
+	return content
 }
