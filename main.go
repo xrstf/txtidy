@@ -74,6 +74,10 @@ func main() {
 	// let's walk the file tree
 
 	filepath.Walk(rootDir, func(path string, info os.FileInfo, err error) error {
+		if info.IsDir() {
+			return nil
+		}
+
 		filename := filepath.Base(path)
 
 		// determine if we reached a directory we ignore
@@ -145,7 +149,7 @@ func tidy(content []byte) []byte {
 	content = bytes.Replace(content, []byte{'\r'}, []byte{}, -1)
 
 	// remove UTF BOMs
-	if bytes.Equal(content[0:3], []byte("\xEF\xBB\xBF")) {
+	if len(content) >= 3 && bytes.Equal(content[0:3], []byte("\xEF\xBB\xBF")) {
 		content = content[3:]
 	}
 

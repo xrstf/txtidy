@@ -1,5 +1,4 @@
-txtidy
-======
+# txtidy
 
 This is just a very, very simple helper fixes a couple of inconsistencies in all
 text files within a given directory. It performs these changes:
@@ -12,13 +11,13 @@ text files within a given directory. It performs these changes:
 I'm using this whenever I get a bunch of HTML/CSS/JS files and want to commit
 them to a repository. Having clean files prevent ugly diffs later on.
 
-Installation
-------------
+## Installation
 
-    go get https://github.com/xrstf/txtidy
+```
+go get go.xrstf.de/txtidy
+```
 
-Usage
------
+## Usage
 
 Just run the ``txtidy`` binary and give the filename patterns to match against
 all files from the starting directory resursively.
