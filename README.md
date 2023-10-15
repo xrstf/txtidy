@@ -23,10 +23,11 @@ Just run the ``txtidy`` binary and give the filename patterns to match against
 all files from the starting directory resursively.
 
 ```
-Usage of ./txtidy:
+Usage of txtidy:
   -a, --all          run on all files, i.e. do not exclude [.git .hg .svn node_modules bower_components vendor]
   -d, --dir string   root directory to search files in
   -v, --verbose      whether or not to print all visited files
+  -V, --version      show version info and exit immediately
 ```
 
 For example:
