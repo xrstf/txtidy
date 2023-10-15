@@ -96,7 +96,11 @@ func main() {
 
 	// let's walk the file tree
 
-	filepath.Walk(rootDir, func(path string, info os.FileInfo, err error) error {
+	err = filepath.Walk(rootDir, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+
 		if info.IsDir() {
 			return nil
 		}
@@ -146,7 +150,7 @@ func main() {
 		original := content
 		content = tidy(content)
 
-		if bytes.Compare(content, original) != 0 {
+		if !bytes.Equal(content, original) {
 			if !verbose {
 				fmt.Printf("%s …", path)
 			}
@@ -165,6 +169,9 @@ func main() {
 
 		return nil
 	})
+	if err != nil {
+		log.Fatalf("Error: Failed to walk filesystem: %v", err)
+	}
 }
 
 func tidy(content []byte) []byte {
