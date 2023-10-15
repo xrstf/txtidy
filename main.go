@@ -10,15 +10,34 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"runtime"
 
 	"github.com/spf13/pflag"
 )
+
+// These variables get set by ldflags during compilation.
+var (
+	BuildTag    string
+	BuildCommit string
+	BuildDate   string // RFC3339 format ("2006-01-02T15:04:05Z07:00")
+)
+
+func printVersion() {
+	fmt.Printf(
+		"txtidy %s (%s), built with %s on %s\n",
+		BuildTag,
+		BuildCommit[:10],
+		runtime.Version(),
+		BuildDate,
+	)
+}
 
 var (
 	excludedDirs = []string{".git", ".hg", ".svn", "node_modules", "bower_components", "vendor"}
 
 	dirFlag     = pflag.StringP("dir", "d", "", "root directory to search files in")
 	verboseFlag = pflag.BoolP("verbose", "v", false, "whether or not to print all visited files")
+	versionFlag = pflag.BoolP("version", "V", false, "show version info and exit immediately")
 	allFlag     = pflag.BoolP("all", "a", false, fmt.Sprintf("run on all files, i.e. do not exclude %v", excludedDirs))
 )
 
@@ -26,6 +45,11 @@ var trailingWhitespace = regexp.MustCompile(`(?m:[\t ]+$)`)
 
 func main() {
 	pflag.Parse()
+
+	if *versionFlag {
+		printVersion()
+		return
+	}
 
 	verbose := *verboseFlag
 	visitAll := *allFlag
