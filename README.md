@@ -13,8 +13,8 @@ them to a repository. Having clean files prevent ugly diffs later on.
 
 ## Installation
 
-```
-go get go.xrstf.de/txtidy
+```bash
+go install go.xrstf.de/txtidy
 ```
 
 ## Usage
@@ -22,9 +22,16 @@ go get go.xrstf.de/txtidy
 Just run the ``txtidy`` binary and give the filename patterns to match against
 all files from the starting directory resursively.
 
-    txtidy [-a] [-v] [-dir=<dir>] <pattern> <pattern> <pattern>
+```
+Usage of ./txtidy:
+  -a, --all          run on all files, i.e. do not exclude [.git .hg .svn node_modules bower_components vendor]
+  -d, --dir string   root directory to search files in
+  -v, --verbose      whether or not to print all visited files
+```
 
 For example:
 
-    $ txtidy *.php
-    $ txtidy -v *.css *.less
+```bash
+$ txtidy *.php
+$ txtidy -v *.css *.less
+```

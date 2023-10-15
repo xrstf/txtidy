@@ -1,27 +1,31 @@
+// SPDX-FileCopyrightText: 2023 Christoph Mewes
+// SPDX-License-Identifier: MIT
+
 package main
 
 import (
 	"bytes"
-	"flag"
 	"fmt"
-	"io/ioutil"
+	"log"
 	"os"
 	"path/filepath"
 	"regexp"
+
+	"github.com/spf13/pflag"
 )
 
 var (
-	dirFlag     = flag.String("dir", "", "root directory to search files in")
-	verboseFlag = flag.Bool("v", false, "whether or not to print all visited files")
-	allFlag     = flag.Bool("a", false, "run on all files, i.e. do not exclude .git, .hg, node_modules etc.")
+	excludedDirs = []string{".git", ".hg", ".svn", "node_modules", "bower_components", "vendor"}
 
-	excludedDirs = []string{".git", ".hg", ".svn", "node_modules", "bower_components"}
+	dirFlag     = pflag.StringP("dir", "d", "", "root directory to search files in")
+	verboseFlag = pflag.BoolP("verbose", "v", false, "whether or not to print all visited files")
+	allFlag     = pflag.BoolP("all", "a", false, fmt.Sprintf("run on all files, i.e. do not exclude %v", excludedDirs))
 )
 
 var trailingWhitespace = regexp.MustCompile(`(?m:[\t ]+$)`)
 
 func main() {
-	flag.Parse()
+	pflag.Parse()
 
 	verbose := *verboseFlag
 	visitAll := *allFlag
@@ -31,8 +35,7 @@ func main() {
 	if rootDir == "" {
 		dir, err := os.Getwd()
 		if err != nil {
-			fmt.Printf("Error: could not determine current working directory: %s\n", err.Error())
-			os.Exit(1)
+			log.Fatalf("Error: could not determine current working directory: %v", err)
 		}
 
 		rootDir = dir
@@ -41,8 +44,7 @@ func main() {
 	// turn into an absolute path
 	abs, err := filepath.Abs(rootDir)
 	if err != nil {
-		fmt.Printf("Error: could not determine absolute path for '%s': %s\n", rootDir, err.Error())
-		os.Exit(1)
+		log.Fatalf("Error: could not determine absolute path for '%s': %v", rootDir, err)
 	}
 
 	rootDir = abs
@@ -50,24 +52,21 @@ func main() {
 	// check if the path actually exists
 	stats, err := os.Stat(rootDir)
 	if err != nil || !stats.IsDir() {
-		fmt.Printf("Error: the given root directory '%s' could not be found.\n", rootDir)
-		os.Exit(1)
+		log.Fatalf("Error: the given root directory '%s' could not be found.", rootDir)
 	}
 
 	// collect all file patterns
-	patterns := flag.Args()
+	patterns := pflag.Args()
 	if len(patterns) == 0 {
-		fmt.Printf("Error: no file pattern have been given.\n\n")
-		flag.PrintDefaults()
-		os.Exit(1)
+		pflag.Usage()
+		log.Fatalf("Error: no file pattern have been given.")
 	}
 
 	// check patterns
 	for _, pattern := range patterns {
 		_, err := filepath.Match(pattern, "dummy")
 		if err != nil {
-			fmt.Printf("Error: file pattern '%s' is invalid.\n", pattern)
-			os.Exit(1)
+			log.Fatalf("Error: file pattern '%s' is invalid.", pattern)
 		}
 	}
 
@@ -105,14 +104,14 @@ func main() {
 		}
 
 		if verbose {
-			fmt.Printf("%s...", path)
+			fmt.Printf("%s …", path)
 		}
 
 		// read file into memory
-		content, err := ioutil.ReadFile(path)
+		content, err := os.ReadFile(path)
 		if err != nil {
 			if !verbose {
-				fmt.Printf("%s...", path)
+				fmt.Printf("%s …", path)
 			}
 
 			fmt.Printf(" error: %s\n", err.Error())
@@ -125,12 +124,12 @@ func main() {
 
 		if bytes.Compare(content, original) != 0 {
 			if !verbose {
-				fmt.Printf("%s...", path)
+				fmt.Printf("%s …", path)
 			}
 
 			stats, _ := os.Stat(path)
 
-			err := ioutil.WriteFile(path, content, stats.Mode())
+			err := os.WriteFile(path, content, stats.Mode())
 			if err != nil {
 				fmt.Printf(" error: %s\n", err.Error())
 			} else {
